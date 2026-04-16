@@ -11,6 +11,8 @@ interface FamilyDashboardPageProps {
 
 const FamilyDashboardPage = ({ familyUsername }: FamilyDashboardPageProps) => {
   const [profiles, setProfiles] = useState<ElderlyProfile[]>([]);
+  const [allProfiles, setAllProfiles] = useState<ElderlyProfile[]>([]);
+  const [selectedProfileId, setSelectedProfileId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -19,10 +21,17 @@ const FamilyDashboardPage = ({ familyUsername }: FamilyDashboardPageProps) => {
       setLoading(true);
       setError('');
       try {
-        const data = await fetchProfiles(familyUsername);
-        setProfiles(data);
+        const data = await fetchProfiles();
+        setAllProfiles(data);
+        const assigned = data.filter(
+          (profile) => profile.familyContact.trim().toLowerCase() === familyUsername.trim().toLowerCase(),
+        );
+        setProfiles(assigned);
+        if (!selectedProfileId) {
+          setSelectedProfileId(assigned[0]?.id ?? data[0]?.id ?? '');
+        }
       } catch (err) {
-        setError('Unable to load your assigned elder profiles.');
+        setError('Unable to load elder profiles.');
       } finally {
         setLoading(false);
       }
@@ -39,7 +48,8 @@ const FamilyDashboardPage = ({ familyUsername }: FamilyDashboardPageProps) => {
     return { total, high, medium, low };
   }, [profiles]);
 
-  const activeProfile = profiles[0];
+  const selectedProfile = allProfiles.find((profile) => profile.id === selectedProfileId) ?? null;
+  const activeProfile = selectedProfile ?? profiles[0] ?? null;
 
   return (
     <div className={styles.familyPage}>
@@ -62,6 +72,36 @@ const FamilyDashboardPage = ({ familyUsername }: FamilyDashboardPageProps) => {
 
           {error && <p className={styles.errorMessage}>{error}</p>}
           {loading && <p>Loading elder profiles…</p>}
+        </Card>
+      </section>
+
+      <section className={styles.selectionSection}>
+        <Card title="Choose an Elder Profile" className={styles.selectionCard}>
+          <p>Select any elder from the list below to review their profile. Assigned elders are shown first.</p>
+          {allProfiles.length === 0 ? (
+            <p>No elder profiles have been added yet.</p>
+          ) : (
+            <div className={styles.profileList}>
+              {allProfiles.map((profile) => (
+                <button
+                  key={profile.id}
+                  type="button"
+                  className={`${styles.profileListItem} ${selectedProfileId === profile.id ? styles.selectedProfile : ''}`}
+                  onClick={() => setSelectedProfileId(profile.id)}
+                >
+                  <div>
+                    <strong>{profile.name}</strong>
+                    <p>{profile.age} years • {profile.location}</p>
+                    <p className={styles.assignedLabel}>
+                      {profile.familyContact.trim().toLowerCase() === familyUsername.trim().toLowerCase()
+                        ? 'Assigned to you'
+                        : `Assigned to: ${profile.familyContact}`}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </Card>
       </section>
 

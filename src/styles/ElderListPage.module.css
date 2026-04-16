@@ -1,0 +1,65 @@
+.elderListPage {
+  width: min(1200px, 100%);
+  display: grid;
+  gap: 20px;
+}
+
+.description {
+  color: #475569;
+  max-width: 720px;
+  margin: 0;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.headerRow h1 {
+  margin: 0;
+}
+
+.listCard {
+  padding: 24px;
+}
+
+.errorMessage {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.profileGrid {
+  display: grid;
+  gap: 18px;
+}
+
+.profileCard {
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(248, 250, 252, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  display: grid;
+  gap: 10px;
+}
+
+.profileHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.notes {
+  margin: 0;
+  color: #334155;
+}

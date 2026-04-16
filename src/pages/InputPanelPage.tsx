@@ -7,6 +7,7 @@ import styles from '../styles/InputPanelPage.module.css';
 import { AIPrediction } from '../types';
 import { useAlarmSound } from '../hooks/useAlarmSound';
 import { useAssessmentAPI } from '../hooks/useAssessmentAPI';
+import { ElderlyProfile, fetchProfiles } from '../api/admin';
 
 const moodMapping = {
   Happy: { score: 1, label: 'Happy' },
@@ -20,7 +21,8 @@ const buildPrediction = (
   interactions: number,
   supportNetwork: number,
 ): AIPrediction => {
-  if (mood === 'Sad' || mood === 'Withdrawn' || interactions < 5 || supportNetwork < 2) {
+  // High risk: Multiple concerning factors present
+  if ((mood === 'Sad' || mood === 'Withdrawn') && (interactions < 3 || supportNetwork < 1)) {
     return {
       risk: 'High',
       summary: 'Recent indicators point to heightened loneliness risk. The resident needs more active engagement and social check-ins.',
@@ -33,7 +35,8 @@ const buildPrediction = (
     };
   }
 
-  if (mood === 'Neutral' || interactions < 10 || supportNetwork < 4) {
+  // Medium risk: Some concerning factors
+  if (mood === 'Neutral' || interactions < 7 || supportNetwork < 3) {
     return {
       risk: 'Medium',
       summary: 'Moderate isolation signals were observed. Keep encouraging social routines and familiar interactions.',
@@ -45,6 +48,7 @@ const buildPrediction = (
     };
   }
 
+  // Low risk: Positive indicators present
   return {
     risk: 'Low',
     summary: 'Positive social patterns are present. Continue nurturing supportive moments and maintain attention to changes.',
@@ -66,6 +70,8 @@ const InputPanelPage = () => {
   const [socialConnections, setSocialConnections] = useState('');
   const [familyContact, setFamilyContact] = useState('');
   const [notes, setNotes] = useState('');
+  const [elders, setElders] = useState<ElderlyProfile[]>([]);
+  const [selectedElderId, setSelectedElderId] = useState('');
   const [uclaQ1, setUclaQ1] = useState('2'); // Feel lack of companionship
   const [uclaQ2, setUclaQ2] = useState('2'); // Feel left out
   const [uclaQ3, setUclaQ3] = useState('2'); // Feel isolated
@@ -75,6 +81,30 @@ const InputPanelPage = () => {
   const [loading, setLoading] = useState(false);
   const { analyze, error: apiError } = useAssessmentAPI();
   const { playAlarm } = useAlarmSound();
+
+  const selectedElder = elders.find((elder) => elder.id === selectedElderId) ?? null;
+
+  useEffect(() => {
+    const loadElders = async () => {
+      try {
+        const data = await fetchProfiles();
+        setElders(data);
+        if (!selectedElderId && data.length > 0) {
+          setSelectedElderId(data[0].id);
+        }
+      } catch (err) {
+        console.error('Unable to load existing elders:', err);
+      }
+    };
+
+    loadElders();
+  }, []);
+
+  useEffect(() => {
+    if (selectedElder) {
+      setFamilyContact(selectedElder.familyContact);
+    }
+  }, [selectedElder]);
 
   // Play alarm when high risk is detected
   useEffect(() => {
@@ -124,7 +154,30 @@ const InputPanelPage = () => {
       <section className={styles.gridLayout}>
         <div className={styles.formWrapper}>
           <Card className={styles.formCard} title="Daily Assessment">
+            {selectedElder && (
+              <div className={styles.selectedElder}>
+                <h4>Assessing for: {selectedElder.name} ({selectedElder.age} years old, {selectedElder.location})</h4>
+              </div>
+            )}
             <form className={styles.formBody} onSubmit={handleSubmit}>
+              {/* Elder Selection Section */}
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle} style={{ borderColor: '#f59e0b' }}>
+                  👴 Select Elder Profile
+                </h3>
+                <label className={styles.question}>
+                  <span className={styles.questionText}>Choose an existing elder profile</span>
+                  <select value={selectedElderId} onChange={(event) => setSelectedElderId(event.target.value)}>
+                    <option value="">Select an elder...</option>
+                    {elders.map((elder) => (
+                      <option key={elder.id} value={elder.id}>
+                        {elder.name} • {elder.location}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
               {/* Daily Activities Section */}
               <div className={styles.section}>
                 <h3 className={styles.sectionTitle} style={{ borderColor: '#a78bfa' }}>

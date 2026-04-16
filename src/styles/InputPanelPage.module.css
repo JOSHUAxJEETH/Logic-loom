@@ -16,6 +16,20 @@
   min-height: auto;
 }
 
+.selectedElder {
+  padding: 16px;
+  background: rgba(245, 158, 11, 0.1);
+  border-radius: 12px;
+  border-left: 4px solid #f59e0b;
+  margin-bottom: 20px;
+}
+
+.selectedElder h4 {
+  margin: 0;
+  color: #92400e;
+  font-weight: 600;
+}
+
 .formBody {
   display: grid;
   gap: 26px;

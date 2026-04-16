@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import InputPanelPage from './pages/InputPanelPage';
 import FamilyDashboardPage from './pages/FamilyDashboardPage';
+import ElderListPage from './pages/ElderListPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import styles from './styles/App.module.css';
 import PageTransition from './components/PageTransition';
@@ -44,6 +45,10 @@ function App() {
             <Route
               path="/admin-dashboard"
               element={userRole === 'ngo' ? <AdminDashboardPage /> : <Navigate to="/login" replace />}
+            />
+            <Route
+              path="/elders"
+              element={userRole === 'ngo' ? <ElderListPage /> : <Navigate to="/login" replace />}
             />
             <Route
               path="/family"

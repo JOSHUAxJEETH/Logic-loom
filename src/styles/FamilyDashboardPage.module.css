@@ -258,6 +258,124 @@
   flex-direction: column;
 }
 
+.profileBadge {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(125, 211, 252, 0.16);
+  color: #0f172a;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.errorMessage {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.profileDetail {
+  display: grid;
+  gap: 16px;
+}
+
+.profileRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.profileMeta {
+  display: grid;
+  gap: 8px;
+  padding: 16px 0 0;
+  color: #475569;
+}
+
+.profileNotes {
+  padding-top: 16px;
+}
+
+.selectionSection {
+  width: 100%;
+}
+
+.selectionCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profileList {
+  display: grid;
+  gap: 12px;
+}
+
+.profileListItem {
+  width: 100%;
+  text-align: left;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(255, 255, 255, 0.72);
+  cursor: pointer;
+}
+
+.profileListItem:hover {
+  background: rgba(167, 139, 250, 0.08);
+}
+
+.selectedProfile {
+  background: rgba(167, 139, 250, 0.14);
+  border-color: rgba(167, 139, 250, 0.4);
+}
+
+.assignedLabel {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.selectionSection {
+  width: 100%;
+}
+
+.selectionCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profileList {
+  display: grid;
+  gap: 12px;
+}
+
+.profileListItem {
+  width: 100%;
+  text-align: left;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(255, 255, 255, 0.72);
+  cursor: pointer;
+}
+
+.profileListItem:hover {
+  background: rgba(167, 139, 250, 0.08);
+}
+
+.selectedProfile {
+  background: rgba(167, 139, 250, 0.14);
+  border-color: rgba(167, 139, 250, 0.4);
+}
+
+.assignedLabel {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
 .insightContent {
   display: grid;
   gap: 16px;

@@ -1,9 +1,9 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import RiskBadge from '../components/RiskBadge';
 import styles from '../styles/AdminDashboardPage.module.css';
-import { createProfile, fetchProfiles, ElderlyProfile, ProfileInput } from '../api/admin';
+import { createProfile, fetchProfiles, updateProfile, ElderlyProfile, ProfileInput } from '../api/admin';
 
 const defaultForm: ProfileInput = {
   name: '',
@@ -22,10 +22,12 @@ const defaultForm: ProfileInput = {
 const AdminDashboardPage = () => {
   const [form, setForm] = useState(defaultForm);
   const [profiles, setProfiles] = useState<ElderlyProfile[]>([]);
+  const [selectedProfileId, setSelectedProfileId] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  const selectedProfile = profiles.find((profile) => profile.id === selectedProfileId) ?? null;
   const lastEntry = profiles[0];
 
   useEffect(() => {
@@ -49,6 +51,33 @@ const AdminDashboardPage = () => {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
+  const handleSelectExisting = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const profileId = event.target.value;
+    setSelectedProfileId(profileId);
+
+    if (!profileId) {
+      setForm(defaultForm);
+      return;
+    }
+
+    const profile = profiles.find((item) => item.id === profileId);
+    if (profile) {
+      setForm({
+        name: profile.name,
+        age: profile.age,
+        gender: profile.gender,
+        location: profile.location,
+        familyContact: profile.familyContact,
+        appetite: profile.appetite,
+        mood: profile.mood,
+        mobility: profile.mobility,
+        sleepQuality: profile.sleepQuality,
+        lonelinessScore: profile.lonelinessScore,
+        notes: profile.notes,
+      });
+    }
+  };
+
   const handleSave = async (event: FormEvent) => {
     event.preventDefault();
     if (!form.name.trim() || !form.age.trim() || !form.familyContact.trim()) {
@@ -60,15 +89,24 @@ const AdminDashboardPage = () => {
     setError('');
 
     try {
-      const savedProfile = await createProfile({
+      const payload = {
         ...form,
         location: form.location.trim() || 'Not specified',
-      });
+      };
 
-      setProfiles((current) => [savedProfile, ...current]);
+      let savedProfile: ElderlyProfile;
+      if (selectedProfileId) {
+        savedProfile = await updateProfile(selectedProfileId, payload);
+        setProfiles((current) => current.map((profile) => (profile.id === selectedProfileId ? savedProfile : profile)));
+      } else {
+        savedProfile = await createProfile(payload);
+        setProfiles((current) => [savedProfile, ...current]);
+      }
+
       setForm(defaultForm);
+      setSelectedProfileId('');
     } catch (err) {
-      setError('Unable to save profile. Please try again.');
+      setError(selectedProfileId ? 'Unable to update profile. Please try again.' : 'Unable to save profile. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -109,6 +147,17 @@ const AdminDashboardPage = () => {
         <Card title="Geriatric Profile" className={styles.formCard}>
           {error ? <p className={styles.errorMessage}>{error}</p> : null}
           <form className={styles.profileForm} onSubmit={handleSave}>
+            <label>
+              Select existing elder to edit
+              <select value={selectedProfileId} onChange={handleSelectExisting}>
+                <option value="">Create a new profile</option>
+                {profiles.map((profile) => (
+                  <option key={profile.id} value={profile.id}>
+                    {profile.name} • {profile.location}
+                  </option>
+                ))}
+              </select>
+            </label>
             <div className={styles.fieldGroup}>
               <label>
                 Name
@@ -223,7 +272,7 @@ const AdminDashboardPage = () => {
 
             <div className={styles.actionsRow}>
               <Button type="submit" disabled={saving}>
-                {saving ? 'Saving...' : 'Save Profile'}
+                {saving ? 'Saving...' : selectedProfileId ? 'Update Profile' : 'Save Profile'}
               </Button>
             </div>
           </form>
@@ -238,7 +287,12 @@ const AdminDashboardPage = () => {
             ) : (
               <div className={styles.entryList}>
                 {profiles.map((profile) => (
-                  <div key={profile.id} className={styles.entryItem}>
+                  <button
+                    key={profile.id}
+                    type="button"
+                    className={`${styles.entryItem} ${selectedProfileId === profile.id ? styles.selectedEntry : ''}`}
+                    onClick={() => handleSelectExisting({ target: { value: profile.id } } as React.ChangeEvent<HTMLSelectElement>)}
+                  >
                     <div>
                       <h4>{profile.name}</h4>
                       <p>{profile.age} years • {profile.location}</p>
@@ -247,7 +301,7 @@ const AdminDashboardPage = () => {
                       <RiskBadge risk={profile.risk} />
                       <span>{profile.createdAt}</span>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             )}

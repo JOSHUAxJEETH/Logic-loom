@@ -27,6 +27,9 @@ const Navbar = ({ role, userName, onLogout }: NavbarProps) => {
             <NavLink className={({ isActive }) => (isActive ? styles.active : '')} to="/admin-dashboard">
               Admin Dashboard
             </NavLink>
+            <NavLink className={({ isActive }) => (isActive ? styles.active : '')} to="/elders">
+              Elders
+            </NavLink>
             <NavLink className={({ isActive }) => (isActive ? styles.active : '')} to="/input">
               Input Panel
             </NavLink>

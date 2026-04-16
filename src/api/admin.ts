@@ -1,4 +1,4 @@
-export const API_BASE = 'http://localhost:8000';
+export const API_BASE = '/api';
 
 export interface ProfileInput {
   name: string;
@@ -21,11 +21,11 @@ export interface ElderlyProfile extends ProfileInput {
 }
 
 export async function fetchProfiles(familyContact?: string): Promise<ElderlyProfile[]> {
-  const url = new URL(`${API_BASE}/api/profiles`);
+  let url = `${API_BASE}/profiles`;
   if (familyContact) {
-    url.searchParams.set('familyContact', familyContact);
+    url += `?familyContact=${encodeURIComponent(familyContact)}`;
   }
-  const response = await fetch(url.toString());
+  const response = await fetch(url);
   if (!response.ok) {
     throw new Error('Failed to load profiles');
   }
@@ -33,7 +33,7 @@ export async function fetchProfiles(familyContact?: string): Promise<ElderlyProf
 }
 
 export async function createProfile(profile: ProfileInput): Promise<ElderlyProfile> {
-  const response = await fetch(`${API_BASE}/api/profiles`, {
+  const response = await fetch(`${API_BASE}/profiles`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -42,6 +42,20 @@ export async function createProfile(profile: ProfileInput): Promise<ElderlyProfi
   });
   if (!response.ok) {
     throw new Error('Failed to save profile');
+  }
+  return response.json();
+}
+
+export async function updateProfile(profileId: string, profile: ProfileInput): Promise<ElderlyProfile> {
+  const response = await fetch(`${API_BASE}/profiles/${profileId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(profile),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to update profile');
   }
   return response.json();
 }

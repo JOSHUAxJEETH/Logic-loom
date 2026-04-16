@@ -177,8 +177,8 @@ def mock_assessment(assessment: AssessmentInput) -> AssessmentResult:
     # Determine risk based on UCLA loneliness score primarily, then other factors
     ucla_score = assessment.uclaLoneliness
     
-    # High risk: UCLA score 16-20 OR combination of other factors
-    if ucla_score >= 16 or assessment.mood in ["Sad", "Withdrawn"] or (interactions < 5 and mood_score < 2):
+    # High risk: UCLA score 16-20 OR combination of severe factors
+    if ucla_score >= 16 or (assessment.mood in ["Sad", "Withdrawn"] and (interactions < 3 or mood_score < 2)):
         return AssessmentResult(
             risk="High",
             summary=f"UCLA Loneliness Scale score of {ucla_score}/20 indicates significant loneliness. Combined with other behavioral indicators, immediate intervention is recommended.",
@@ -192,7 +192,7 @@ def mock_assessment(assessment: AssessmentInput) -> AssessmentResult:
         )
     
     # Medium risk: UCLA score 10-15 OR moderate isolation signals
-    elif ucla_score >= 10 or assessment.mood == "Neutral" or (interactions < 10 and interactions > 4):
+    elif ucla_score >= 10 or assessment.mood == "Neutral" or (interactions < 7 and interactions >= 3):
         return AssessmentResult(
             risk="Medium",
             summary=f"UCLA Loneliness Scale score of {ucla_score}/20 suggests moderate loneliness. Consider increasing social engagement and support.",
@@ -290,6 +290,24 @@ async def create_profile(profile: ProfileInput):
     profiles.insert(0, new_profile)
     save_profiles(profiles)
     return new_profile
+
+@app.put('/api/profiles/{profile_id}', response_model=ElderlyProfile)
+async def update_profile(profile_id: str, profile: ProfileInput):
+    """Update an existing geriatric profile."""
+    profiles = load_profiles()
+    for index, existing in enumerate(profiles):
+        if existing.id == profile_id:
+            updated_profile = ElderlyProfile(
+                id=existing.id,
+                risk=assess_profile_risk(profile),
+                createdAt=existing.createdAt,
+                **profile.dict()
+            )
+            profiles[index] = updated_profile
+            save_profiles(profiles)
+            return updated_profile
+
+    raise HTTPException(status_code=404, detail='Profile not found')
 
 
 def assess_profile_risk(profile: ProfileInput) -> str:
