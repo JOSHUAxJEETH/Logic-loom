@@ -36,6 +36,7 @@ class AssessmentInput(BaseModel):
     socialConnections: str
     familyContact: str
     notes: str
+    uclaLoneliness: int
 
 class AssessmentResult(BaseModel):
     risk: str
@@ -66,10 +67,14 @@ async def assess_elder(assessment: AssessmentInput):
         - Mood score (1-5): {assessment.moodScore}
         - Social connections: {assessment.socialConnections}
         - Family contact: {assessment.familyContact}
-        - Additional notes: {assessment.notes}
         
-        Based on this data, provide:
-        1. A risk level (Low/Medium/High)
+        UCLA Loneliness Scale Score: {assessment.uclaLoneliness}/20
+        (Range: 5-9=Low, 10-15=Moderate, 16-20=High loneliness)
+        
+        Additional notes: {assessment.notes}
+        
+        Based on this comprehensive data (especially the UCLA Loneliness Scale), provide:
+        1. A risk level (Low/Medium/High) - Weight UCLA score heavily in your assessment
         2. A behavioral summary (2-3 sentences)
         3. 3-4 specific, actionable recommendations
         4. An alert message if risk is high
@@ -129,36 +134,47 @@ def mock_assessment(assessment: AssessmentInput) -> AssessmentResult:
         mood_score = int(assessment.moodScore)
     except:
         mood_score = 3
-
-    if assessment.mood in ["Sad", "Withdrawn"] or interactions < 5 or mood_score < 2:
+    
+    # Determine risk based on UCLA loneliness score primarily, then other factors
+    ucla_score = assessment.uclaLoneliness
+    
+    # High risk: UCLA score 16-20 OR combination of other factors
+    if ucla_score >= 16 or assessment.mood in ["Sad", "Withdrawn"] or (interactions < 5 and mood_score < 2):
         return AssessmentResult(
             risk="High",
-            summary="Recent indicators point to heightened loneliness risk. Immediate intervention recommended.",
+            summary=f"UCLA Loneliness Scale score of {ucla_score}/20 indicates significant loneliness. Combined with other behavioral indicators, immediate intervention is recommended.",
             recommendations=[
-                "Increase family or volunteer visits",
-                "Schedule meaningful conversations",
-                "Monitor mood changes closely"
+                "Increase frequency of family or volunteer visits",
+                "Arrange for group activities or social programs",
+                "Consider counseling or peer support groups",
+                "Schedule regular check-ins and meaningful conversations"
             ],
-            alert="High risk alert: Immediate care attention recommended."
+            alert=f"🚨 High loneliness alert (UCLA: {ucla_score}/20). Immediate care attention recommended."
         )
-    elif assessment.mood == "Neutral" or interactions < 10 or mood_score < 3:
+    
+    # Medium risk: UCLA score 10-15 OR moderate isolation signals
+    elif ucla_score >= 10 or assessment.mood == "Neutral" or (interactions < 10 and interactions > 4):
         return AssessmentResult(
             risk="Medium",
-            summary="Moderate isolation signals detected. Encourage more social routines.",
+            summary=f"UCLA Loneliness Scale score of {ucla_score}/20 suggests moderate loneliness. Consider increasing social engagement and support.",
             recommendations=[
-                "Introduce weekly group activities",
-                "Increase family contact frequency",
-                "Track daily mood patterns"
+                "Introduce weekly group activities or hobbies",
+                "Increase family contact frequency to 2-3 times weekly",
+                "Encourage participation in community events",
+                "Track mood patterns and social engagement trends"
             ]
         )
+    
+    # Low risk: UCLA score 5-9 AND positive social indicators
     else:
         return AssessmentResult(
             risk="Low",
-            summary="Positive social patterns present. Continue current support level.",
+            summary=f"UCLA Loneliness Scale score of {ucla_score}/20 indicates low loneliness. Positive social patterns and engagement are present.",
             recommendations=[
-                "Maintain care routine consistency",
-                "Encourage hobbies and activities",
-                "Share updates with family"
+                "Maintain current social routines and activities",
+                "Continue regular family contact and outings",
+                "Encourage hobbies and interests that bring joy",
+                "Monitor for any changes in mood or social engagement"
             ]
         )
 

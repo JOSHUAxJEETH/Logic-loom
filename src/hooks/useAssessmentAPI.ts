@@ -18,6 +18,7 @@ export const useAssessmentAPI = () => {
       socialConnections: string;
       familyContact: string;
       notes: string;
+      uclaLoneliness: number;
     }): Promise<AIPrediction | null> => {
       setLoading(true);
       setError(null);

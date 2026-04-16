@@ -66,6 +66,11 @@ const InputPanelPage = () => {
   const [socialConnections, setSocialConnections] = useState('');
   const [familyContact, setFamilyContact] = useState('');
   const [notes, setNotes] = useState('');
+  const [uclaQ1, setUclaQ1] = useState('2'); // Feel lack of companionship
+  const [uclaQ2, setUclaQ2] = useState('2'); // Feel left out
+  const [uclaQ3, setUclaQ3] = useState('2'); // Feel isolated
+  const [uclaQ4, setUclaQ4] = useState('2'); // Feel lonely
+  const [uclaQ5, setUclaQ5] = useState('2'); // Feel nobody knows me well
   const [result, setResult] = useState<AIPrediction | null>(null);
   const [loading, setLoading] = useState(false);
   const { analyze, error: apiError } = useAssessmentAPI();
@@ -84,6 +89,9 @@ const InputPanelPage = () => {
     setResult(null);
 
     try {
+      // Calculate UCLA Loneliness Score (sum of 5 questions, range 5-20)
+      const uclaLoneliness = Number(uclaQ1) + Number(uclaQ2) + Number(uclaQ3) + Number(uclaQ4) + Number(uclaQ5);
+      
       const analysisResult = await analyze({
         meals,
         outings,
@@ -94,6 +102,7 @@ const InputPanelPage = () => {
         socialConnections,
         familyContact,
         notes,
+        uclaLoneliness,
       });
       setResult(analysisResult);
     } catch (err) {
@@ -213,6 +222,75 @@ const InputPanelPage = () => {
                     <span>High</span>
                   </div>
                 </label>
+              </div>
+
+              {/* UCLA Loneliness Scale Section */}
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle} style={{ borderColor: '#fb7185' }}>
+                  📊 UCLA Loneliness Scale
+                </h3>
+                <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '12px', fontStyle: 'italic' }}>
+                  Rate each statement (1 = Never, 2 = Rarely, 3 = Sometimes, 4 = Always)
+                </p>
+                
+                <label className={styles.question}>
+                  <span className={styles.questionText}>I feel that I lack companionship</span>
+                  <select value={uclaQ1} onChange={(event) => setUclaQ1(event.target.value)}>
+                    <option value="1">Never</option>
+                    <option value="2">Rarely</option>
+                    <option value="3">Sometimes</option>
+                    <option value="4">Always</option>
+                  </select>
+                </label>
+
+                <label className={styles.question}>
+                  <span className={styles.questionText}>I feel left out</span>
+                  <select value={uclaQ2} onChange={(event) => setUclaQ2(event.target.value)}>
+                    <option value="1">Never</option>
+                    <option value="2">Rarely</option>
+                    <option value="3">Sometimes</option>
+                    <option value="4">Always</option>
+                  </select>
+                </label>
+
+                <label className={styles.question}>
+                  <span className={styles.questionText}>I feel isolated from others</span>
+                  <select value={uclaQ3} onChange={(event) => setUclaQ3(event.target.value)}>
+                    <option value="1">Never</option>
+                    <option value="2">Rarely</option>
+                    <option value="3">Sometimes</option>
+                    <option value="4">Always</option>
+                  </select>
+                </label>
+
+                <label className={styles.question}>
+                  <span className={styles.questionText}>I feel lonely</span>
+                  <select value={uclaQ4} onChange={(event) => setUclaQ4(event.target.value)}>
+                    <option value="1">Never</option>
+                    <option value="2">Rarely</option>
+                    <option value="3">Sometimes</option>
+                    <option value="4">Always</option>
+                  </select>
+                </label>
+
+                <label className={styles.question}>
+                  <span className={styles.questionText}>I feel that nobody really knows me well</span>
+                  <select value={uclaQ5} onChange={(event) => setUclaQ5(event.target.value)}>
+                    <option value="1">Never</option>
+                    <option value="2">Rarely</option>
+                    <option value="3">Sometimes</option>
+                    <option value="4">Always</option>
+                  </select>
+                </label>
+
+                <div style={{ padding: '12px', backgroundColor: '#fef3c7', borderRadius: '8px', marginTop: '12px', fontSize: '0.9em', color: '#92400e' }}>
+                  <strong>UCLA Score: {Number(uclaQ1) + Number(uclaQ2) + Number(uclaQ3) + Number(uclaQ4) + Number(uclaQ5)}/20</strong>
+                  <p style={{ margin: '4px 0 0 0' }}>
+                    {Number(uclaQ1) + Number(uclaQ2) + Number(uclaQ3) + Number(uclaQ4) + Number(uclaQ5) <= 9 && '✅ Low loneliness'}
+                    {Number(uclaQ1) + Number(uclaQ2) + Number(uclaQ3) + Number(uclaQ4) + Number(uclaQ5) > 9 && Number(uclaQ1) + Number(uclaQ2) + Number(uclaQ3) + Number(uclaQ4) + Number(uclaQ5) <= 15 && '⚠️ Moderate loneliness'}
+                    {Number(uclaQ1) + Number(uclaQ2) + Number(uclaQ3) + Number(uclaQ4) + Number(uclaQ5) > 15 && '🚨 High loneliness'}
+                  </p>
+                </div>
               </div>
 
               {/* Additional Notes Section */}
